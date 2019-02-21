@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:http/http.dart';
 import 'package:nhs_login/nhs_login.dart';
+import 'package:nhs_login/src/models/nhs_token_response.dart';
 
 void main() async {
   final NhsLogin nhsLogin = NhsLogin(
@@ -21,13 +22,14 @@ void main() async {
     ),
   );
 
-  final token = await nhsLogin.getToken(result);
+  final NhsTokenResponse token = await nhsLogin.getToken(result);
+
+  nhsLogin.getUser();
 
   print(token);
 }
 
 void _runBrowser(String url) {
-  print('_runBrowser called with: url:[$url]');
   switch (Platform.operatingSystem) {
     case "linux":
       Process.run("x-www-browser", [url]);
@@ -39,7 +41,7 @@ void _runBrowser(String url) {
       Process.run("explorer", [url]);
       break;
     default:
-      throw new UnsupportedError(
+      throw UnsupportedError(
           "Unsupported platform: ${Platform.operatingSystem}");
       break;
   }

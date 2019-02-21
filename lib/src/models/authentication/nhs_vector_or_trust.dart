@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import '../nhs_authentication.dart';
+import 'package:nhs_login/src/nhs_authentication.dart';
 
-part 'nhs_vector_or_trust_impl.dart';
+part 'package:nhs_login/src/models/authentication/nhs_vector_or_trust_impl.dart';
 
 /// No Identity verification, user authenticated using password
 NhsVectorOfTrust P0_Cp_Cd = P0 & Cp & Cd;

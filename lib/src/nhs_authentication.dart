@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:http/http.dart';
 import 'package:meta/meta.dart';
 import 'package:nhs_login/nhs_login.dart';
-import 'package:nhs_login/src/models/nhs_display.dart';
-import 'package:nhs_login/src/models/nhs_prompt.dart';
-import 'package:nhs_login/src/models/nhs_scope.dart';
-import 'package:nhs_login/src/models/nhs_vector_or_trust.dart';
+import 'package:nhs_login/src/models/authentication/nhs_display.dart';
+import 'package:nhs_login/src/models/authentication/nhs_prompt.dart';
+import 'package:nhs_login/src/models/authentication/nhs_scope.dart';
+import 'package:nhs_login/src/models/authentication/nhs_vector_or_trust.dart';
 
 /// The client initiates an authentication request to the NHS Digital NHS login
 /// authorize endpoint using the HTTP GET or POST methods.

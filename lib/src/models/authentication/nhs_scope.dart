@@ -1,3 +1,5 @@
+import 'package:nhs_login/src/models/userinfo/nhs_userinfo.dart';
+
 /// Scopes can be used to request that specific sets of information be made
 /// available as Claim Values when making an Authentication Request
 class NhsScope {
@@ -9,30 +11,36 @@ class NhsScope {
   static const NhsScope openId = NhsScope._('openid');
 
   /// This scope value requests access to the End-User's default profile claims,
-  /// which are: nhs_number, birthdate, family_name
+  /// which are: [NhsUserinfo.nhsNumber], [NhsUserinfo.birthdate],
+  /// [NhsUserinfo.familyName]
   static const NhsScope profile = NhsScope._('profile');
 
-  /// This scope value requests access to the phone_number and
-  /// phone_number_verified claims
+  /// This scope value requests access to the [NhsUserinfo.email] and
+  /// [NhsUserinfo.emailVerified] claims
+  static const NhsScope email = NhsScope._('email');
+
+  /// This scope value requests access to the [NhsUserinfo.phoneNumber] and
+  /// [NhsUserinfo.phoneNumberVerified] claims
   static const NhsScope phone = NhsScope._('phone');
 
-  /// This scope value requests access to the address claim as held within the
-  /// NHS Personal Demographics Service
+  /// This scope value requests access to the [NhsUserinfo.address] claim as
+  /// held within the NHS Personal Demographics Service
   @Deprecated(
       'Support for the address scope is currently under user research and '
       'evaluation.')
   static const NhsScope address = NhsScope._('address');
 
   /// This scope value requests access to the End-User's
-  /// gp_integration_credentials claims
+  /// [NhsUserinfo.gpIntegrationCredentials] claims
   @Deprecated(
       'Support for the gp_integration_credentials scope is currently under '
       'user research and evaluation.')
   static const NhsScope gpIntegrationCredentials =
       NhsScope._('gp_integration_credentials');
 
-  /// This scope value requests access to the End-User’s gp_registration_details
-  /// claims as held within the NHS Personal Demographics Service
+  /// This scope value requests access to the End-User’s
+  /// [NhsUserinfo.gpRegistrationDetails] claims as held within the NHS Personal
+  /// Demographics Service
   @Deprecated(
       'Support for the gp_integration_credentials scope is currently under '
       'user research and evaluation.')
@@ -41,13 +49,14 @@ class NhsScope {
 
   /// This scope value requests access to the End-User’s additional demographics
   /// claims (as held within the NHS Personal Demographics Service), which are:
-  /// given_name
+  /// [NhsUserinfo.givenName]
   static const NhsScope profileExtended = NhsScope._('profile_extended');
 
   static const List<NhsScope> values = <NhsScope>[
     openId,
     profile,
     phone,
+    email,
     address,
     gpIntegrationCredentials,
     gpRegistrationDetails,
@@ -56,6 +65,7 @@ class NhsScope {
   static const List<String> _names = <String>[
     'openId',
     'profile',
+    'email',
     'phone',
     'address',
     'gpIntegrationCredentials',

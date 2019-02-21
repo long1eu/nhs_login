@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 import 'package:nhs_login/src/models/nhs_response_error.dart';
-import 'package:nhs_login/src/models/nhs_scope.dart';
-import 'package:nhs_login/src/models/nhs_token_error.dart';
+import 'package:nhs_login/src/models/authentication/nhs_scope.dart';
+import 'package:nhs_login/src/models/token/nhs_token_error.dart';
 
 /// After receiving a valid and authorised Token request from the client, the
 /// Token Endpoint returns a response which includes an ID Token and an Access

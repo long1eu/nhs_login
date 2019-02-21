@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
-import 'package:nhs_login/src/models/nhs_authentication_error.dart';
+import 'package:nhs_login/src/models/authentication/nhs_authentication_error.dart';
 import 'package:nhs_login/src/models/nhs_response_error.dart';
 import 'package:nhs_login/src/nhs_authentication.dart';
 

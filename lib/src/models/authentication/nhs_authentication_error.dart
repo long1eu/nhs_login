@@ -1,5 +1,5 @@
-import '../nhs_authentication.dart';
-import 'nhs_prompt.dart';
+import 'package:nhs_login/src/models/authentication/nhs_prompt.dart';
+import 'package:nhs_login/src/nhs_authentication.dart';
 
 class NhsAuthenticationError {
   const NhsAuthenticationError._(this._value);
