@@ -18,15 +18,17 @@ void main() async {
     NhsAuthentication(
       scopes: [NhsScope.openId, NhsScope.profile],
       prompt: NhsPrompt.none,
-      vectorOfTrust: P0_Cp_Cd | P5_Cp_Cd,
+      vectorOfTrust: P0_Cp_Cd,
     ),
   );
+  if (!result.isError) {
+    final NhsTokenResponse token = await nhsLogin.getToken(result);
 
-  final NhsTokenResponse token = await nhsLogin.getToken(result);
-
-  nhsLogin.getUser();
-
-  print(token);
+    print(token);
+  } else {
+    print(result.error);
+    print(result.errorDescription);
+  }
 }
 
 void _runBrowser(String url) {

@@ -115,10 +115,14 @@ class NhsClient {
     object = Uri.encodeQueryComponent(object);
     final List<int> data = utf8.encode(object);
 
-    final HttpClientRequest request =
-        await HttpClient().post(host, 443, 'token');
+    final HttpClientRequest request = await HttpClient()
+        .postUrl(Uri(scheme: 'https', host: host, path: 'token'));
 
-    request.headers.add('content-type', 'application/x-www-form-urlencoded');
+    print(jsonEncode(tokenRequest.params));
+
+    request.headers
+      ..add('content-type', 'application/x-www-form-urlencoded')
+      ..add('content-length', data.length);
     request.add(data);
 
     final HttpClientResponse response = await request.close();
@@ -132,9 +136,9 @@ class NhsClient {
       tokenResponse.accessToken;
       return tokenResponse;
     } else {
-      throw StateError(
+      return Future.error(StateError(
           'Coundn\'t get a valid token. Got error: (${response.statusCode}): '
-          '$body');
+          '$body'));
     }
   }
 
@@ -158,9 +162,9 @@ class NhsClient {
     if (response.statusCode == 200) {
       return NhsUserinfo.fromJson(jsonDecode(body));
     } else {
-      throw StateError(
+      return Future.error(StateError(
           'Coundn\'t get a the user. Got error: (${response.statusCode}): '
-          '$body');
+          '$body'));
     }
   }
 }
