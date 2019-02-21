@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:meta/meta.dart';
-import 'package:nhs_login/src/nhs_login.dart';
+import 'package:nhs_login/src/nhs_client.dart';
 
 class Sender {
   Sender({

@@ -20,8 +20,8 @@ typedef UrlLauncher = void Function(String url);
 /// [code]
 typedef JwtSigner = Future<String> Function(String code);
 
-class NhsLogin {
-  const NhsLogin({
+class NhsClient {
+  const NhsClient({
     @required this.urlLauncher,
     @required this.jwtSigner,
     @required this.host,

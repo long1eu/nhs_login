@@ -6,7 +6,7 @@ import 'package:nhs_login/nhs_login.dart';
 import 'package:nhs_login/src/models/nhs_token_response.dart';
 
 void main() async {
-  final NhsLogin nhsLogin = NhsLogin(
+  final NhsClient nhsLogin = NhsClient(
     urlLauncher: _runBrowser,
     host: 'auth.sandpit.signin.nhs.uk',
     redirectUri: 'http://${InternetAddress.loopbackIPv4.host}:3000',

@@ -212,7 +212,7 @@ class NhsAuthentication {
     );
   }
 
-  NhsAuthentication mergeWith(NhsLogin nhsLogin) {
+  NhsAuthentication mergeWith(NhsClient nhsLogin) {
     return copyWith(
       host: host ?? nhsLogin.host,
       clientId: clientId ?? nhsLogin.clientId,
