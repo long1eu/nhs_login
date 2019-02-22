@@ -167,6 +167,8 @@ abstract class NhsUserinfo
   @override
   String get errorUri => null;
 
+  bool get isError => error != null;
+
   @memoized
   Map<String, dynamic> get json => serializers.serializeWith(serializer, this);
 

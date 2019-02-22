@@ -7,8 +7,7 @@ void main() async {
   final NhsClient nhsLogin = NhsClient(
     urlLauncher: _runBrowser,
     host: 'auth.sandpit.signin.nhs.uk',
-    redirectUri:
-        'https://europe-west1-hackathon-passport-v2.cloudfunctions.net/getAccessToken',
+    redirectUri: 'https://europe-west1-hackathon-passport-v2.cloudfunctions.net/getAccessToken',
     clientId: 'digital-health-passport',
   );
 
@@ -30,8 +29,6 @@ void main() async {
   print(result);
 }
 
-// c8ab3891-1f3a-4b9d-96e9-086cb2cd36cc
-// ba86aee1-ef26-4003-9ede-64ecd7182aad
 void _runBrowser(String url) {
   switch (Platform.operatingSystem) {
     case "linux":

@@ -63,6 +63,8 @@ abstract class NhsTokenResponse
   @BuiltValueField(wireName: 'error_uri')
   String get errorUri;
 
+  bool get isError => error != null;
+
   @memoized
   Map<String, dynamic> get json => serializers.serializeWith($serializer, this);
 
@@ -92,10 +94,6 @@ class _NhsTokenResponseSerializer extends _$NhsTokenResponseSerializer {
   @override
   NhsTokenResponse deserialize(Serializers serializers, Iterable serialized,
       {FullType specifiedType = FullType.unspecified}) {
-
-
-
-
     final result = new NhsTokenResponseBuilder();
 
     final iterator = serialized.iterator;

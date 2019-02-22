@@ -33,6 +33,9 @@ abstract class NhsLoginResult
   @nullable
   NhsUserinfo get userinfo;
 
+  bool get isError =>
+      authentication.isError || token.isError || userinfo.isError;
+
   BuiltMap<String, String> get otherParams;
 
   @memoized
