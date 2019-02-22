@@ -7,5 +7,5 @@ abstract class NhsResponseError<T> {
   String get errorDescription;
 
   /// URI of a web page that includes additional information about the error
-  String get errorUri => null;
+  String get errorUri;
 }

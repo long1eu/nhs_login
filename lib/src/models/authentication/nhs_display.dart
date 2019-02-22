@@ -1,25 +1,27 @@
-class NhsDisplay {
-  const NhsDisplay._(this.value);
+library nhs_display;
 
-  final String value;
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
 
-  static const NhsDisplay page = NhsDisplay._('page');
+part 'nhs_display.g.dart';
 
-  static const NhsDisplay touch = NhsDisplay._('touch');
+class NhsDisplay extends EnumClass {
+  const NhsDisplay._(String name) : super(name);
+
+  static const NhsDisplay page = _$page;
+
+  static const NhsDisplay touch = _$touch;
 
   @Deprecated('Value not supported in this version.')
-  static const NhsDisplay popup = NhsDisplay._('popup');
+  static const NhsDisplay popup = _$popup;
 
   @Deprecated('Value not supported in this version.')
-  static const NhsDisplay wap = NhsDisplay._('wap');
+  static const NhsDisplay wap = _$wap;
 
-  static const List<NhsDisplay> values = <NhsDisplay>[
-    page,
-    touch,
-    popup,
-    wap,
-  ];
+  static BuiltSet<NhsDisplay> get values => _$NhsDisplayValues;
 
-  @override
-  String toString() => value;
+  static NhsDisplay valueOf(String name) => _$NhsDisplayValueOf(name);
+
+  static Serializer<NhsDisplay> get serializer => _$nhsDisplaySerializer;
 }

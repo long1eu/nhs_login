@@ -1,71 +1,145 @@
-import 'package:meta/meta.dart';
-import 'package:nhs_login/src/models/nhs_response_error.dart';
+library nhs_token_response;
+
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
 import 'package:nhs_login/src/models/authentication/nhs_scope.dart';
+import 'package:nhs_login/src/models/nhs_response_error.dart';
+import 'package:nhs_login/src/models/serializers.dart';
+import 'package:nhs_login/src/models/token/nhs_id_token.dart';
 import 'package:nhs_login/src/models/token/nhs_token_error.dart';
+
+part 'nhs_token_response.g.dart';
 
 /// After receiving a valid and authorised Token request from the client, the
 /// Token Endpoint returns a response which includes an ID Token and an Access
 /// Token.
-class NhsTokenResponse implements NhsResponseError<NhsTokenError> {
-  const NhsTokenResponse({
-    @required this.accessToken,
-    @required this.tokenType,
-    @required this.expiresIn,
-    @required this.scope,
-    @required this.idToken,
-    @required this.error,
-    @required this.errorDescription,
-    @required this.errorUri,
-  });
 
-  factory NhsTokenResponse.fromJson(Map<String, dynamic> json) {
-    return NhsTokenResponse(
-      accessToken: json['access_token'],
-      tokenType: json['token_type'],
-      expiresIn: Duration(seconds: int.parse(json['expires_in'])),
-      scope: List<String>.of(json['scope']).map((it) => NhsScope.forName(it)),
-      idToken: json['id_token'],
-      error: NhsTokenError.forName(json['error']),
-      errorDescription: json['error_description'],
-      errorUri: json['error_uri'],
-    );
-  }
+abstract class NhsTokenResponse
+    implements
+        Built<NhsTokenResponse, NhsTokenResponseBuilder>,
+        NhsResponseError<NhsTokenError> {
+  factory NhsTokenResponse([void updates(NhsTokenResponseBuilder b)]) =
+      _$NhsTokenResponse;
 
-  /// Signed JWT which encodes the Access Token, see sections 4.1 and 4.3
-  final String accessToken;
+  factory NhsTokenResponse.fromJson(Map<String, dynamic> json) =>
+      serializers.deserializeWith($serializer, json);
+
+  NhsTokenResponse._();
+
+  /// Signed JWT which encodes the Access Token
+  @BuiltValueField(wireName: 'access_token')
+  String get accessToken;
 
   /// Must be value “bearer”
-  final String tokenType;
+  @BuiltValueField(wireName: 'token_type')
+  String get tokenType;
 
   /// The lifetime of the access token.
-  final Duration expiresIn;
+  @BuiltValueField(wireName: 'expires_in')
+  @nullable
+  Duration get expiresIn;
 
   /// Identical to the scope requested by the client;
-  final List<NhsScope> scope;
+  @BuiltValueField(wireName: 'scope')
+  @nullable
+  BuiltList<NhsScope> get scope;
 
   /// Signed JWT which encodes the ID Token
-  final String idToken;
+  @BuiltValueField(wireName: 'id_token')
+  NhsIdToken get idToken;
 
   @override
-  final NhsTokenError error;
+  @nullable
+  NhsTokenError get error;
 
   @override
-  final String errorDescription;
+  @BuiltValueField(wireName: 'error_description')
+  @nullable
+  String get errorDescription;
 
   @override
-  final String errorUri;
+  @nullable
+  @BuiltValueField(wireName: 'error_uri')
+  String get errorUri;
+
+  @memoized
+  Map<String, dynamic> get json => serializers.serializeWith($serializer, this);
+
+  static Serializer<NhsTokenResponse> get serializer =>
+      _$nhsTokenResponseSerializer;
+
+  static Serializer<NhsTokenResponse> get $serializer =>
+      _nhsTokenResponseSerializer;
+}
+
+Serializer<NhsTokenResponse> _nhsTokenResponseSerializer =
+    _NhsTokenResponseSerializer();
+
+class _NhsTokenResponseSerializer extends _$NhsTokenResponseSerializer {
+  @override
+  Iterable serialize(Serializers serializers, NhsTokenResponse object,
+      {FullType specifiedType = FullType.unspecified}) {
+    final List result = super.serialize(serializers, object);
+
+    result[result.indexOf('scope') + 1] = serializers.serialize(
+        object.scope.join(' '),
+        specifiedType: const FullType(String));
+
+    return result;
+  }
 
   @override
-  String toString() {
-    return 'NhsTokenResponse{'
-        'accessToken: $accessToken, '
-        'tokenType: $tokenType, '
-        'expiresIn: $expiresIn, '
-        'scope: $scope, '
-        'idToken: $idToken, '
-        'error: $error, '
-        'errorDescription: $errorDescription, '
-        'errorUri: $errorUri'
-        '}';
+  NhsTokenResponse deserialize(Serializers serializers, Iterable serialized,
+      {FullType specifiedType = FullType.unspecified}) {
+
+
+
+
+    final result = new NhsTokenResponseBuilder();
+
+    final iterator = serialized.iterator;
+    while (iterator.moveNext()) {
+      final key = iterator.current as String;
+      iterator.moveNext();
+      final dynamic value = iterator.current;
+      switch (key) {
+        case 'access_token':
+          result.accessToken = serializers.deserialize(value,
+              specifiedType: const FullType(String)) as String;
+          break;
+        case 'token_type':
+          result.tokenType = serializers.deserialize(value,
+              specifiedType: const FullType(String)) as String;
+          break;
+        case 'expires_in':
+          result.expiresIn = serializers.deserialize(value,
+              specifiedType: const FullType(Duration)) as Duration;
+          break;
+        case 'scope':
+          result.scope.replace(serializers.deserialize(value.split(' '),
+              specifiedType: const FullType(
+                  BuiltList, const [const FullType(NhsScope)])) as BuiltList);
+          break;
+        case 'id_token':
+          result.idToken.replace(serializers.deserialize(value,
+              specifiedType: const FullType(NhsIdToken)) as NhsIdToken);
+          break;
+        case 'error':
+          result.error = serializers.deserialize(value,
+              specifiedType: const FullType(NhsTokenError)) as NhsTokenError;
+          break;
+        case 'error_description':
+          result.errorDescription = serializers.deserialize(value,
+              specifiedType: const FullType(String)) as String;
+          break;
+        case 'error_uri':
+          result.errorUri = serializers.deserialize(value,
+              specifiedType: const FullType(String)) as String;
+          break;
+      }
+    }
+
+    return result.build();
   }
 }

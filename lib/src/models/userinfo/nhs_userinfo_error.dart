@@ -1,3 +1,6 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/serializer.dart';
+
 class NhsUserinfoError {
   const NhsUserinfoError._(this._value);
 
@@ -47,6 +50,32 @@ class NhsUserinfoError {
     'insufficient_scope',
   ];
 
+  static NhsUserinfoErrorSerializer get serializer =>
+      NhsUserinfoErrorSerializer();
+
   @override
   String toString() => _value;
+}
+
+class NhsUserinfoErrorSerializer
+    implements PrimitiveSerializer<NhsUserinfoError> {
+  NhsUserinfoErrorSerializer();
+
+  final bool structured = false;
+  @override
+  final Iterable<Type> types = BuiltList<Type>([NhsUserinfoError]);
+  @override
+  final String wireName = 'NhsUserinfoError';
+
+  @override
+  Object serialize(Serializers serializers, NhsUserinfoError error,
+      {FullType specifiedType = FullType.unspecified}) {
+    return error._value;
+  }
+
+  @override
+  NhsUserinfoError deserialize(Serializers serializers, Object serialized,
+      {FullType specifiedType = FullType.unspecified}) {
+    return NhsUserinfoError.values[NhsUserinfoError._names.indexOf(serialized)];
+  }
 }

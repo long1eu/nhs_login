@@ -1,3 +1,6 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/serializer.dart';
+
 /// If the Token Request is invalid or unauthorized, the Platform constructs the
 /// error response. The parameters of the Token Error Response are defined as
 /// in Section 5.2 of OAuth 2.0 [RFC6749].
@@ -78,6 +81,30 @@ class NhsTokenError {
     'invalid_scope',
   ];
 
+  static NhsTokenErrorSerializer get serializer => NhsTokenErrorSerializer();
+
   @override
   String toString() => _value;
+}
+
+class NhsTokenErrorSerializer implements PrimitiveSerializer<NhsTokenError> {
+  NhsTokenErrorSerializer();
+
+  final bool structured = false;
+  @override
+  final Iterable<Type> types = BuiltList<Type>([NhsTokenError]);
+  @override
+  final String wireName = 'NhsTokenError';
+
+  @override
+  Object serialize(Serializers serializers, NhsTokenError error,
+      {FullType specifiedType = FullType.unspecified}) {
+    return error._value;
+  }
+
+  @override
+  NhsTokenError deserialize(Serializers serializers, Object serialized,
+      {FullType specifiedType = FullType.unspecified}) {
+    return NhsTokenError.values[NhsTokenError._names.indexOf(serialized)];
+  }
 }

@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:http/http.dart';
 import 'package:meta/meta.dart';
 import 'package:nhs_login/nhs_login.dart';
 import 'package:nhs_login/src/models/authentication/nhs_display.dart';
@@ -134,11 +133,6 @@ class NhsAuthentication {
     );
   }
 
-  Request get request {
-    return Request('POST', Uri(scheme: 'https', host: host, path: 'authorize'))
-      ..bodyFields = _params;
-  }
-
   Map<String, dynamic> get _params {
     assert(clientId != null && clientId.isNotEmpty);
     assert(redirectUri != null && redirectUri.isNotEmpty);
@@ -155,7 +149,7 @@ class NhsAuthentication {
     };
 
     if (display != null) {
-      params['display'] = display.value;
+      params['display'] = display.name;
     }
 
     if (prompt != null) {

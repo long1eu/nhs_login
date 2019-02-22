@@ -1,11 +1,17 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/serializer.dart';
 import 'package:nhs_login/src/models/userinfo/nhs_userinfo.dart';
 
 /// Scopes can be used to request that specific sets of information be made
 /// available as Claim Values when making an Authentication Request
 class NhsScope {
-  const NhsScope._(this.value);
+  const NhsScope._(this._value);
 
-  final String value;
+  factory NhsScope.forName(String it) {
+    return values[_names.indexOf(it)];
+  }
+
+  final String _value;
 
   /// Mandatory value for OpenID Connect Requests
   static const NhsScope openId = NhsScope._('openid');
@@ -63,20 +69,40 @@ class NhsScope {
     profileExtended,
   ];
   static const List<String> _names = <String>[
-    'openId',
+    'openid',
     'profile',
     'email',
     'phone',
     'address',
-    'gpIntegrationCredentials',
-    'gpRegistrationDetails',
-    'profileExtended',
+    'gp_integration_credentials',
+    'gp_registration_details',
+    'profile_extended',
   ];
 
-  @override
-  String toString() => value;
+  static NhsScopeSerializer get serializer => NhsScopeSerializer();
 
-  factory NhsScope.forName(String it) {
-    return values[_names.indexOf(it)];
+  @override
+  String toString() => _value;
+}
+
+class NhsScopeSerializer implements PrimitiveSerializer<NhsScope> {
+  NhsScopeSerializer();
+
+  final bool structured = false;
+  @override
+  final Iterable<Type> types = BuiltList<Type>([NhsScope]);
+  @override
+  final String wireName = 'NhsScope';
+
+  @override
+  Object serialize(Serializers serializers, NhsScope error,
+      {FullType specifiedType = FullType.unspecified}) {
+    return error._value;
+  }
+
+  @override
+  NhsScope deserialize(Serializers serializers, Object serialized,
+      {FullType specifiedType = FullType.unspecified}) {
+    return NhsScope.values[NhsScope._names.indexOf(serialized)];
   }
 }

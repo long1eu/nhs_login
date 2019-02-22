@@ -1,3 +1,5 @@
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/serializer.dart';
 import 'package:nhs_login/src/models/authentication/nhs_prompt.dart';
 import 'package:nhs_login/src/nhs_authentication.dart';
 
@@ -158,6 +160,33 @@ class NhsAuthenticationError {
     'registration_not_supported',
   ];
 
+  static NhsAuthenticationErrorSerializer get serializer =>
+      NhsAuthenticationErrorSerializer();
+
   @override
   String toString() => _value;
+}
+
+class NhsAuthenticationErrorSerializer
+    implements PrimitiveSerializer<NhsAuthenticationError> {
+  NhsAuthenticationErrorSerializer();
+
+  final bool structured = false;
+  @override
+  final Iterable<Type> types = BuiltList<Type>([NhsAuthenticationError]);
+  @override
+  final String wireName = 'NhsAuthenticationError';
+
+  @override
+  Object serialize(Serializers serializers, NhsAuthenticationError error,
+      {FullType specifiedType = FullType.unspecified}) {
+    return error._value;
+  }
+
+  @override
+  NhsAuthenticationError deserialize(Serializers serializers, Object serialized,
+      {FullType specifiedType = FullType.unspecified}) {
+    return NhsAuthenticationError
+        .values[NhsAuthenticationError._names.indexOf(serialized)];
+  }
 }

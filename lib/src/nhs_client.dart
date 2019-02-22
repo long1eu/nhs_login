@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:built_collection/built_collection.dart';
+import 'package:http/http.dart';
 import 'package:meta/meta.dart';
-import 'package:nhs_login/src/models/authentication/nhs_authentication_error.dart';
-import 'package:nhs_login/src/models/authentication/nhs_authentication_response.dart';
-import 'package:nhs_login/src/models/nhs_token_response.dart';
+import 'package:nhs_login/src/models/nhs_login_result.dart';
 import 'package:nhs_login/src/models/userinfo/nhs_userinfo.dart';
 import 'package:nhs_login/src/nhs_authentication.dart';
-import 'package:nhs_login/src/nhs_token_request.dart';
 import 'package:nhs_login/src/util/sender.dart';
 import 'package:user_preferences/user_preferences.dart';
 
@@ -16,14 +15,9 @@ import 'package:user_preferences/user_preferences.dart';
 /// can interact with the NHS Servers
 typedef UrlLauncher = void Function(String url);
 
-/// Signature for a method that must return a valid signed JWT for the given
-/// [code]
-typedef JwtSigner = Future<String> Function(String code);
-
 class NhsClient {
   const NhsClient({
     @required this.urlLauncher,
-    @required this.jwtSigner,
     @required this.host,
     @required this.redirectUri,
     @required this.clientId,
@@ -40,10 +34,6 @@ class NhsClient {
   /// Function that should open the url into an user agent so that the End User
   /// can interact with the NHS Server
   final UrlLauncher urlLauncher;
-
-  /// Function what returns a valid sign JWT for the given
-  /// [NhsAuthenticationResponse.code]
-  final JwtSigner jwtSigner;
 
   /// The host of the NHS Server
   final String host;
@@ -63,83 +53,42 @@ class NhsClient {
   /// callback into a native application
   final String redirectUri;
 
-  Future<NhsAuthenticationResponse> login(
-      NhsAuthentication authentication) async {
+  Future<NhsLoginResult> login(NhsAuthentication authentication) async {
     if (!_initialized) await init();
 
-    final Completer<NhsAuthenticationResponse> completer = Completer();
+    final Completer<NhsLoginResult> completer = Completer();
     authentication = authentication.mergeWith(this);
 
     Sender(
       authenticationUri: authentication.uri,
       urlLauncher: urlLauncher,
       callback: (Map<String, String> response) {
-        final NhsAuthenticationResponse authenticationResponse =
-            NhsAuthenticationResponse(
-          state: response['state'],
-          code: response['code'],
-          error: NhsAuthenticationError.forName(response['error']),
-          errorDescription: response['errorDescription'],
-          errorUri: response['errorUri'],
-          other: Map.from(response)
-            ..remove('state')
-            ..remove('code')
-            ..remove('error')
-            ..remove('errorDescription')
-            ..remove('errorUri'),
-        );
+        final NhsLoginResult nhsLoginResult = NhsLoginResult.fromJson({
+          'authentication': Uri.splitQueryString(response['authentication']),
+          'token': response['token'].isEmpty
+              ? null
+              : extractIdToken(Map<String, dynamic>.of(
+                  Uri.splitQueryString(response['token']))),
+          'userinfo': response['userinfo'].isEmpty
+              ? null
+              : Uri.splitQueryString(response['userinfo']),
+        });
 
-        completer.complete(authenticationResponse);
+        UserPreferences.instance.edit()
+          ..putString('access_token', nhsLoginResult.token.accessToken)
+          ..apply();
+
+        completer.complete(nhsLoginResult.rebuild((b) {
+          b.otherParams = MapBuilder<String, String>(Map.of(response)
+            ..remove('authentication')
+            ..remove('token')
+            ..remove('userinfo')
+            ..remove('state'));
+        }));
       },
     ).send();
 
     return completer.future;
-  }
-
-  Future<NhsTokenResponse> getToken(
-      NhsAuthenticationResponse authResponse) async {
-    if (!_initialized) await init();
-    assert(!authResponse.isError);
-
-    final String jwt = await jwtSigner(authResponse.code);
-
-    final NhsTokenRequest tokenRequest = NhsTokenRequest(
-      host: host,
-      code: authResponse.code,
-      redirectUri: redirectUri,
-      clientId: clientId,
-      clientAssertion: jwt,
-    );
-
-    String object = jsonEncode(tokenRequest.params);
-    object = Uri.encodeQueryComponent(object);
-    final List<int> data = utf8.encode(object);
-
-    final HttpClientRequest request = await HttpClient()
-        .postUrl(Uri(scheme: 'https', host: host, path: 'token'));
-
-    print(jsonEncode(tokenRequest.params));
-
-    request.headers
-      ..add('content-type', 'application/x-www-form-urlencoded')
-      ..add('content-length', data.length);
-    request.add(data);
-
-    final HttpClientResponse response = await request.close();
-    final String body =
-        (await response.transform(utf8.decoder).toList()).join();
-
-    if (response.statusCode == 200) {
-      final NhsTokenResponse tokenResponse =
-          await NhsTokenResponse.fromJson(jsonDecode(body));
-
-      tokenResponse.accessToken;
-      return tokenResponse;
-    } else {
-      return Future.error(StateError(
-          'Coundn\'t get a valid token. Got error: (${response.statusCode}): '
-          '$body'));
-    }
   }
 
   Future<NhsUserinfo> getUser([String accessToken]) async {
@@ -150,67 +99,60 @@ class NhsClient {
       throw StateError('The user is not logged in.');
     }
 
-    final HttpClientRequest request =
-        await HttpClient().get(host, 443, 'userinfo');
-    request.headers.add('Authorization', 'Bearer $accessToken');
-
-    final HttpClientResponse response = await request.close();
-
-    final String body =
-        (await response.transform(utf8.decoder).toList()).join();
+    final Response response = await Client().get('https://$host/userinfo',
+        headers: <String, String>{'Authorization': 'Bearer $accessToken'});
 
     if (response.statusCode == 200) {
-      return NhsUserinfo.fromJson(jsonDecode(body));
+      return NhsUserinfo.fromJson(jsonDecode(response.body));
     } else {
       return Future.error(StateError(
           'Coundn\'t get a the user. Got error: (${response.statusCode}): '
-          '$body'));
+          '${response.body}'));
     }
+  }
+
+  Map<String, dynamic> extractIdToken(Map<String, dynamic> tokenResponse) {
+    final String idToken = tokenResponse['id_token'];
+    tokenResponse['id_token'] = _parseJwt(idToken);
+    return tokenResponse;
   }
 }
 
-/*
-    final List<int> data = utf8.encode(object);
+Map<String, dynamic> _parseJwt(String token) {
+  final parts = token.split('.');
+  if (parts.length != 3) {
+    throw Exception('invalid token');
+  }
 
-    final HttpClientRequest request = await HttpClient()
-        .postUrl(Uri(scheme: 'https', host: host, path: 'token'));
+  final dynamic header = jsonDecode(_decodeBase64(parts[0]));
+  dynamic payload = jsonDecode(_decodeBase64(parts[1]));
+  final dynamic signature = parts[2];
 
-    print(request.uri);
+  payload['aud'] =
+      payload['aud'] is List ? payload['aud'] : <String>[payload['aud']];
 
-    request.headers
-      ..add('accept', 'application/json')
-      ..add('content-type', 'application/x-www-form-urlencoded')
-      ..add('content-length', data.length);
+  return <String, dynamic>{
+    'header': header,
+    'payload': payload,
+    'signature': signature,
+  };
+}
 
-    print(request.headers);
-    request.write(object);
+String _decodeBase64(String str) {
+  String output = str.replaceAll('-', '+').replaceAll('_', '/');
 
-    final HttpClientResponse response = await request.close();
-    final String body =
-        (await response.transform(utf8.decoder).toList()).join();
+  switch (output.length % 4) {
+    case 0:
+      break;
+    case 2:
+      output += '==';
+      break;
+    case 3:
+      output += '=';
+      break;
+    default:
+      throw Exception('Illegal base64url string!"');
+  }
 
-    print(body);
-    print(response.headers);
-    print(response.statusCode);
-
-    return body;
-*/
-
-/*
-    String object = jsonEncode(tokenRequest.params);
-    object = Uri.encodeQueryComponent(object);
-    final List<int> data = utf8.encode(object);
-
-    final Response response = await Client().post(
-      Uri(scheme: 'https', host: host, path: 'token'),
-      headers: <String, String>{
-        'accept': 'application/json',
-        'content-type': 'application/x-www-form-urlencoded',
-        'content-length': data.length.toString(),
-      },
-      body: data,
-    );
-
-    print(response.body);
-    return response.body;
-*/
+  return utf8.decode(base64Url.decode(output));
+}
