@@ -23,10 +23,14 @@ class NhsClient {
     @required this.clientId,
   });
 
-  static void init() async {
-    await UserPreferences.init(Directory('${Directory.current.path}/build')
-          ..createSync(recursive: true))
-        .then((_) => _initialized = true);
+  static void init([String baseDir]) async {
+    try {
+      UserPreferences.instance;
+      _initialized = true;
+    } catch (e) {
+      baseDir ??= '${Directory.current.path}/build';
+      await UserPreferences.init(Directory(baseDir)..createSync(recursive: true)).then((_) => _initialized = true);
+    }
   }
 
   static bool _initialized = false;
@@ -55,38 +59,33 @@ class NhsClient {
 
   Future<NhsLoginResult> login(NhsAuthentication authentication) async {
     if (!_initialized) await init();
-
     final Completer<NhsLoginResult> completer = Completer();
-    authentication = authentication.mergeWith(this);
+    StreamSubscription<Map<String, String>> sub;
+    sub = Sender(authenticationUri: authentication.uri, urlLauncher: urlLauncher)
+        .send()
+        .where((it) => it['state'] == authentication.state)
+        .listen((response) {
+      sub.cancel();
+      final NhsLoginResult nhsLoginResult = NhsLoginResult.fromJson({
+        'authentication': Uri.splitQueryString(response['authentication']),
+        'token': response['token'].isEmpty
+            ? null
+            : extractIdToken(Map<String, dynamic>.of(Uri.splitQueryString(response['token']))),
+        'userinfo': response['userinfo'].isEmpty ? null : Uri.splitQueryString(response['userinfo']),
+      });
 
-    Sender(
-      authenticationUri: authentication.uri,
-      urlLauncher: urlLauncher,
-      callback: (Map<String, String> response) {
-        final NhsLoginResult nhsLoginResult = NhsLoginResult.fromJson({
-          'authentication': Uri.splitQueryString(response['authentication']),
-          'token': response['token'].isEmpty
-              ? null
-              : extractIdToken(Map<String, dynamic>.of(
-                  Uri.splitQueryString(response['token']))),
-          'userinfo': response['userinfo'].isEmpty
-              ? null
-              : Uri.splitQueryString(response['userinfo']),
-        });
+      UserPreferences.instance.edit()
+        ..putString('access_token', nhsLoginResult.token.accessToken)
+        ..apply();
 
-        UserPreferences.instance.edit()
-          ..putString('access_token', nhsLoginResult.token.accessToken)
-          ..apply();
-
-        completer.complete(nhsLoginResult.rebuild((b) {
-          b.otherParams = MapBuilder<String, String>(Map.of(response)
-            ..remove('authentication')
-            ..remove('token')
-            ..remove('userinfo')
-            ..remove('state'));
-        }));
-      },
-    ).send();
+      completer.complete(nhsLoginResult.rebuild((b) {
+        b.otherParams = MapBuilder<String, String>(Map.of(response) //
+          ..remove('authentication')
+          ..remove('token')
+          ..remove('userinfo')
+          ..remove('state'));
+      }));
+    });
 
     return completer.future;
   }
@@ -99,19 +98,18 @@ class NhsClient {
       throw StateError('The user is not logged in.');
     }
 
-    final Response response = await Client().get('https://$host/userinfo',
-        headers: <String, String>{'Authorization': 'Bearer $accessToken'});
+    final Response response =
+        await Client().get('https://$host/userinfo', headers: <String, String>{'Authorization': 'Bearer $accessToken'});
 
     if (response.statusCode == 200) {
       return NhsUserinfo.fromJson(jsonDecode(response.body));
     } else {
-      return Future.error(StateError(
-          'Coundn\'t get a the user. Got error: (${response.statusCode}): '
+      return Future.error(StateError('Coundn\'t get a the user. Got error: (${response.statusCode}): '
           '${response.body}'));
     }
   }
 
-  Map<String, dynamic> extractIdToken(Map<String, dynamic> tokenResponse) {
+  static Map<String, dynamic> extractIdToken(Map<String, dynamic> tokenResponse) {
     final String idToken = tokenResponse['id_token'];
     tokenResponse['id_token'] = _parseJwt(idToken);
     return tokenResponse;
@@ -128,8 +126,7 @@ Map<String, dynamic> _parseJwt(String token) {
   dynamic payload = jsonDecode(_decodeBase64(parts[1]));
   final dynamic signature = parts[2];
 
-  payload['aud'] =
-      payload['aud'] is List ? payload['aud'] : <String>[payload['aud']];
+  payload['aud'] = payload['aud'] is List ? payload['aud'] : <String>[payload['aud']];
 
   return <String, dynamic>{
     'header': header,

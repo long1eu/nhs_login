@@ -33,7 +33,7 @@ class NhsTokenRequest {
   /// A signed JWT presented for Client Authentication, as per
   /// https://tools.ietf.org/html/rfc7523
   ///
-  /// (Note the “iss” and “sub” claim must equal the client_id and the “aud”
+  /// (Note the "iss" and "sub" claim must equal the client_id and the "aud"
   /// must contain the token endpoint URL)
   ///
   /// The assertion must be signed using the private key of the client, agreed

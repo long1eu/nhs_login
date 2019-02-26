@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:built_collection/built_collection.dart';
+import 'package:built_value/serializer.dart';
 import 'package:nhs_login/src/nhs_authentication.dart';
 
 part 'package:nhs_login/src/models/authentication/nhs_vector_or_trust_impl.dart';
@@ -62,7 +64,11 @@ abstract class NhsVectorOfTrust {
   _NhsVectorOfTrust operator |(_NhsVectorOfTrust value);
 
   _NhsVectorOfTrust operator &(_VectorOfTrust value);
+
+  static Serializer<NhsVectorOfTrust> get serializer => _serializer;
 }
+
+NhsVectorOfTrustSerializer _serializer = NhsVectorOfTrustSerializer();
 
 /// No Identity proofing
 ///
@@ -114,3 +120,37 @@ const _AuthenticationContext Ck = _AuthenticationContext._Ck;
 /// with their account – delivery/use of the device is by cryptographic proof of
 /// key possession using asymmetric key, such as a FIDO-compliant device
 const _AuthenticationContext Cm = _AuthenticationContext._Cm;
+
+class NhsVectorOfTrustSerializer
+    implements PrimitiveSerializer<NhsVectorOfTrust> {
+  NhsVectorOfTrustSerializer();
+
+  final bool structured = false;
+  @override
+  final Iterable<Type> types = BuiltList<Type>([NhsVectorOfTrust]);
+  @override
+  final String wireName = 'NhsVectorOfTrust';
+
+  @override
+  Object serialize(Serializers serializers, NhsVectorOfTrust vot,
+      {FullType specifiedType = FullType.unspecified}) {
+    return vot.toString();
+  }
+
+  @override
+  NhsVectorOfTrust deserialize(Serializers serializers, Object serialized,
+      {FullType specifiedType = FullType.unspecified}) {
+    final List<String> vot = List<String>.from(jsonDecode(serialized));
+
+    return vot.fold(null, (NhsVectorOfTrust vot, String data) {
+      final NhsVectorOfTrust current = data
+              .split('.')
+              .map((item) =>
+                  _allValues.firstWhere((dynamic it) => it._value == item))
+              .reduce((dynamic prev, dynamic current) => prev & current)
+          as NhsVectorOfTrust;
+
+      return vot == null ? current : vot | current;
+    });
+  }
+}

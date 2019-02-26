@@ -58,11 +58,13 @@ abstract class NhsAuthenticationResponse
   /// Description of the error
   @override
   @nullable
+  @BuiltValueField(wireName: 'error_description')
   String get errorDescription;
 
   /// URI of a web page that includes additional information about the error
   @override
   @nullable
+  @BuiltValueField(wireName: 'error_uri')
   String get errorUri;
 
   /// Any other parameters that were return by the Authorisation Server

@@ -49,14 +49,14 @@ abstract class NhsIdTokenHeader
   /// Algorithm used for signing the JWT
   /// {alg}
   ///
-  /// “RS512” – RSASSA-PKCS1-v1_5 with the SHA-512 hash algorithm
+  /// "RS512" – RSASSA-PKCS1-v1_5 with the SHA-512 hash algorithm
   @BuiltValueField(wireName: 'alg')
   String get algorithm;
 
   /// Type
   /// {typ}
   ///
-  /// “JWT”
+  /// "JWT"
   @BuiltValueField(wireName: 'typ')
   String get type;
 

@@ -2,8 +2,8 @@ part of 'nhs_vector_or_trust.dart';
 
 abstract class _VectorOfTrust {}
 
-class _NhsVectorOfTrust
-    implements NhsVectorOfTrust, _VectorOfTrust, Comparable<_NhsVectorOfTrust> {
+class _NhsVectorOfTrust extends NhsVectorOfTrust
+    implements _VectorOfTrust, Comparable<_NhsVectorOfTrust> {
   _NhsVectorOfTrust._(this._values)
       : assert(!_values.any((it) => it is _NhsVectorOfTrust)),
         _isList = false;
@@ -167,3 +167,16 @@ class _AuthenticationContext
     }
   }
 }
+
+const List<_VectorOfTrust> _allValues = <_VectorOfTrust>[
+  _VerificationLevel._P0,
+  _VerificationLevel._P3,
+  _VerificationLevel._P5,
+  _VerificationLevel._P6,
+  _VerificationLevel._P7,
+  _VerificationLevel._P9,
+  _AuthenticationContext._Cp,
+  _AuthenticationContext._Cd,
+  _AuthenticationContext._Ck,
+  _AuthenticationContext._Cm,
+];

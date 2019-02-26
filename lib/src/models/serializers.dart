@@ -8,12 +8,14 @@ import 'package:nhs_login/src/models/authentication/nhs_authentication_response.
 import 'package:nhs_login/src/models/authentication/nhs_display.dart';
 import 'package:nhs_login/src/models/authentication/nhs_prompt.dart';
 import 'package:nhs_login/src/models/authentication/nhs_scope.dart';
+import 'package:nhs_login/src/models/authentication/nhs_vector_or_trust.dart';
 import 'package:nhs_login/src/models/nhs_login_result.dart';
 import 'package:nhs_login/src/models/nhs_token_response.dart';
 import 'package:nhs_login/src/models/token/nhs_id_token.dart';
 import 'package:nhs_login/src/models/token/nhs_token_error.dart';
 import 'package:nhs_login/src/models/userinfo/nhs_userinfo.dart';
 import 'package:nhs_login/src/models/userinfo/nhs_userinfo_error.dart';
+import 'package:nhs_login/src/nhs_authentication.dart';
 
 part 'serializers.g.dart';
 
@@ -32,17 +34,19 @@ part 'serializers.g.dart';
   NhsUserinfo,
 ])
 final Serializers serializers = (_$serializers.toBuilder()
+      ..add(NhsAuthentication.$serializer)
       ..add(NhsAuthenticationError.serializer)
       ..add(NhsScope.serializer)
       ..add(NhsTokenError.serializer)
       ..add(NhsUserinfoError.serializer)
       ..add(NhsTokenResponse.$serializer)
+      ..add(NhsVectorOfTrust.serializer)
       ..add(DurationSerializer())
       ..add(DateTimeSerializer())
       ..addPlugin(StandardJsonPlugin())
-      ..addBuilderFactory(
-          const FullType(BuiltList, const [const FullType(NhsScope)]),
-          () => new ListBuilder<NhsScope>()))
+
+    //
+    )
     .build();
 
 class DurationSerializer implements PrimitiveSerializer<Duration> {
@@ -86,6 +90,9 @@ class DateTimeSerializer implements PrimitiveSerializer<DateTime> {
   @override
   DateTime deserialize(Serializers serializers, Object serialized,
       {FullType specifiedType = FullType.unspecified}) {
+    if (serialized is String) {
+      return DateTime.parse(serialized);
+    }
     final secondsSinceEpoch = serialized as int;
     return new DateTime.fromMillisecondsSinceEpoch(secondsSinceEpoch * 1000,
         isUtc: true);

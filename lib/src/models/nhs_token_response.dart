@@ -31,7 +31,7 @@ abstract class NhsTokenResponse
   @BuiltValueField(wireName: 'access_token')
   String get accessToken;
 
-  /// Must be value “bearer”
+  /// Must be value "bearer"
   @BuiltValueField(wireName: 'token_type')
   String get tokenType;
 

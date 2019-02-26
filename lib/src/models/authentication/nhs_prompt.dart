@@ -17,8 +17,8 @@ class NhsPrompt extends EnumClass {
   /// the user will be requested to login
   static const NhsPrompt blank = _$blank;
 
-  /// The Service will request the user to login, regardless of a session
-  /// already existing
+  /// The Service will SSO the user if they still have a valid session,
+  /// otherwise an error code is returned
   static const NhsPrompt none = _$none;
 
   /// The Service will request the user to login, regardless of a session

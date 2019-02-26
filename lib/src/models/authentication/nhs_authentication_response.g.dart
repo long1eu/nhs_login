@@ -41,13 +41,13 @@ class _$NhsAuthenticationResponseSerializer
     }
     if (object.errorDescription != null) {
       result
-        ..add('errorDescription')
+        ..add('error_description')
         ..add(serializers.serialize(object.errorDescription,
             specifiedType: const FullType(String)));
     }
     if (object.errorUri != null) {
       result
-        ..add('errorUri')
+        ..add('error_uri')
         ..add(serializers.serialize(object.errorUri,
             specifiedType: const FullType(String)));
     }
@@ -87,11 +87,11 @@ class _$NhsAuthenticationResponseSerializer
                   specifiedType: const FullType(NhsAuthenticationError))
               as NhsAuthenticationError;
           break;
-        case 'errorDescription':
+        case 'error_description':
           result.errorDescription = serializers.deserialize(value,
               specifiedType: const FullType(String)) as String;
           break;
-        case 'errorUri':
+        case 'error_uri':
           result.errorUri = serializers.deserialize(value,
               specifiedType: const FullType(String)) as String;
           break;
